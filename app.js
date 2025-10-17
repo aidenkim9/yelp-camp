@@ -28,10 +28,7 @@ const LOCAL_DB_URL = "mongodb://127.0.0.1:27017/yelp-camp";
 //DB CONNECTION
 
 mongoose
-  .connect(process.env.DB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.DB_URL)
   .then(() => {
     console.log("✅ CONNECTION TO YELP CAMP DB!");
   })
