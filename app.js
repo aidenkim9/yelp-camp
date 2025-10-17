@@ -158,6 +158,8 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render("campgrounds/error", { err });
 });
 
-app.listen(4000, () => {
-  console.log("✅ CONNECTION TO PORT 4000!");
+const port = process.env.PORT || 4000;
+
+app.listen(port, () => {
+  console.log(`CONNECTION PORT ${port}!`);
 });
