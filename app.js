@@ -28,17 +28,60 @@ const DB_URL = process.env.DB_URL || "mongodb://127.0.0.1:27017/yelp-camp";
 const secret = process.env.CONFIG_SECRET || "thisisyelpcampsecret!!";
 const port = process.env.PORT || 4000;
 
+console.log("🔍 NODE_ENV:", process.env.NODE_ENV);
+console.log("🔍 PORT:", port);
+console.log(
+  "🔍 DB_URL (첫 40자):",
+  DB_URL ? DB_URL.slice(0, 40) + "..." : "❌ 없음"
+);
+
 //DB CONNECTION
 
-mongoose
-  .connect(DB_URL)
-  .then(() => {
-    console.log("✅ CONNECTION TO YELP CAMP DB!");
-  })
-  .catch((err) => {
-    console.log("CONNECTION ERR!");
-    console.log(err);
-  });
+// mongoose
+//   .connect(DB_URL, )
+//   .then(() => {
+//     console.log("✅ CONNECTION TO YELP CAMP DB!");
+//   })
+//   .catch((err) => {
+//     console.log("CONNECTION ERR!");
+//     console.log(err);
+//   });
+
+(async () => {
+  try {
+    console.log("🚀 Trying to connect to MongoDB Atlas...");
+
+    await mongoose.connect(DB_URL, {
+      serverSelectionTimeoutMS: 10000, // 10초 대기
+      connectTimeoutMS: 10000, // 네트워크 연결 시간 제한
+      socketTimeoutMS: 20000, // 소켓 유지시간
+    });
+
+    console.log("✅ MongoDB connection established successfully!");
+  } catch (err) {
+    console.error("❌ MongoDB connection failed!");
+    console.error("📄 Error name:", err.name);
+    console.error("📄 Error message:", err.message);
+
+    // Atlas 연결 실패 시 원인 별 안내
+    if (err.message.includes("ReplicaSetNoPrimary")) {
+      console.error("⚠️ Atlas 클러스터의 IP 화이트리스트를 다시 확인하세요.");
+      console.error(
+        "⚠️ 0.0.0.0/0, Render outbound IP, 현재 IP 모두 등록되어야 합니다."
+      );
+    } else if (err.message.includes("authentication")) {
+      console.error(
+        "⚠️ Atlas 계정 비밀번호(DB_URL) 또는 사용자 권한이 올바른지 확인하세요."
+      );
+    } else if (err.message.includes("ENOTFOUND")) {
+      console.error(
+        "⚠️ Atlas 클러스터 주소(cluster0.xxx.mongodb.net)가 잘못된 것 같습니다."
+      );
+    }
+
+    process.exit(1); // 서버를 종료시켜 Render에서 오류 로그를 표시하게 함
+  }
+})();
 
 const store = mongoStore.create({
   mongoUrl: DB_URL,
