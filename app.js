@@ -24,11 +24,14 @@ const userRoutes = require("./routes/user.js");
 const campgroundRoutes = require("./routes/campgrouds.js");
 const reviewRoutes = require("./routes/reviews.js");
 
-const LOCAL_DB_URL = "mongodb://127.0.0.1:27017/yelp-camp";
+const DB_URL = process.env.DB_URL || "mongodb://127.0.0.1:27017/yelp-camp";
+const secret = process.env.CONFIG_SECRET || "thisisyelpcampsecret!!";
+const port = process.env.PORT || 4000;
+
 //DB CONNECTION
 
 mongoose
-  .connect(process.env.DB_URL)
+  .connect(DB_URL)
   .then(() => {
     console.log("✅ CONNECTION TO YELP CAMP DB!");
   })
@@ -38,10 +41,10 @@ mongoose
   });
 
 const store = mongoStore.create({
-  mongoUrl: process.env.DB_URL,
+  mongoUrl: DB_URL,
   touchAfter: 24 * 60 * 60,
   crypto: {
-    secret: process.env.CONFIG_SECRET,
+    secret,
   },
 });
 
@@ -106,7 +109,7 @@ app.use(
 
 const sessionConfig = {
   store,
-  secret: process.env.CONFIG_SECRET,
+  secret,
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -157,8 +160,6 @@ app.use((err, req, res, next) => {
 
   res.status(statusCode).render("campgrounds/error", { err });
 });
-
-const port = process.env.PORT || 4000;
 
 app.listen(port, () => {
   console.log(`✅ CONNECTION PORT ${port}!`);
